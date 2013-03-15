@@ -87,7 +87,7 @@
 
 #pragma mark - UIImagePickerControllerDelegate
 
--(void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
     NSString *mediaType = [info objectForKey:UIImagePickerControllerMediaType];
     [self dismissViewControllerAnimated:YES completion:nil];
     
@@ -121,14 +121,14 @@
 }
 
 
--(void)image:(UIImage *)image finishedSavingWithError:(NSError *)error contextInfo:(void *)contextInfo {
+- (void)image:(UIImage *)image finishedSavingWithError:(NSError *)error contextInfo:(void *)contextInfo {
     if (error) {
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Save failed" message: @"Failed to save file." delegate: nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [alert show];
     }
 }
 
--(void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
@@ -227,14 +227,14 @@
 
 
 #pragma mark - UITextFieldDelegate
--(BOOL)textFieldShouldReturn:(UITextField *)textField {
+- (BOOL)textFieldShouldReturn:(UITextField *)textField {
     [textField resignFirstResponder];
     return YES;
 }
 
 
 #pragma mark - AVAudioRecorderDelegate
--(void)audioRecorderDidFinishRecording:
+- (void)audioRecorderDidFinishRecording:
 (AVAudioRecorder *)recorder
                           successfully:(BOOL)flag
 {
@@ -245,7 +245,7 @@
     }
 }
 
--(void)audioRecorderEncodeErrorDidOccur:
+- (void)audioRecorderEncodeErrorDidOccur:
 (AVAudioRecorder *)recorder
                                   error:(NSError *)error
 {

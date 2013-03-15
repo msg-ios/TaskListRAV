@@ -71,6 +71,7 @@
     }
     
     [cell.playButton addTarget:self action:@selector(playAudio:) forControlEvents:UIControlEventTouchUpInside];
+    [cell.playVideoButton addTarget:self action:@selector(playVideo:) forControlEvents:UIControlEventTouchUpInside];
     
     [self configureCell:cell forRowAtIndexPath:indexPath];
     
@@ -97,6 +98,14 @@
     else {
         taskCell.playButton.hidden = NO;
     }
+    
+    if (task.videoData == nil) {
+        taskCell.playVideoButton.hidden = YES;
+    }
+    else {
+        taskCell.playVideoButton.hidden = NO;
+    }
+
 }
 
 #pragma mark - NSFetchedResultsControllerDelegate
@@ -227,11 +236,56 @@
     }
     else{
         [_audioPlayer stop];
-        [button setTitle:@"Play" forState:UIControlStateNormal];
+        [button setTitle:@"Play Audio" forState:UIControlStateNormal];
     }
 }
 
--(void)showTaskCreator:(id)sender {
+- (void)playVideo:(UIButton *)button{
+    TaskCell *owningCell = (TaskCell *)button.superview.superview;
+    
+    NSIndexPath *pathToCell = [self.tableView indexPathForCell:owningCell];
+    _pathToPlayingCell = pathToCell;
+    
+    NSLog(@"path to cell: %d", pathToCell.row);
+    
+    Task *task = [self.fetchedResultsController objectAtIndexPath:pathToCell];
+    NSData *videoData = [task.videoData zlibInflate:task.videoData];
+    
+    //get the path to documents directory to save the video in a temporary file
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString *path = [documentsDirectory stringByAppendingPathComponent:@"tempVideo.mp4"];
+    [videoData writeToFile:path atomically:YES];
+    NSURL *url = [NSURL fileURLWithPath:path];
+    
+    _moviePlayer =  [[MPMoviePlayerController alloc] initWithContentURL:url];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(moviePlayBackDidFinish:)
+                                                 name:MPMoviePlayerPlaybackDidFinishNotification
+                                               object:_moviePlayer];
+    
+    _moviePlayer.controlStyle = MPMovieControlStyleDefault;
+    _moviePlayer.shouldAutoplay = YES;
+    [self.view addSubview:_moviePlayer.view];
+    [_moviePlayer setFullscreen:YES animated:YES];
+}
+
+- (void)moviePlayBackDidFinish:(NSNotification*)notification {
+    MPMoviePlayerController *player = [notification object];
+    [[NSNotificationCenter defaultCenter]
+     removeObserver:self
+     name:MPMoviePlayerPlaybackDidFinishNotification
+     object:player];
+    
+    if ([player
+         respondsToSelector:@selector(setFullscreen:animated:)])
+    {
+        [player.view removeFromSuperview];
+    }
+}
+
+- (void)showTaskCreator:(id)sender {
     TaskCreatorViewController *taskCreator = [[TaskCreatorViewController alloc] initWithNibName:@"TaskCreatorViewController" bundle:nil];
     taskCreator.managedObjectContext = self.managedObjectContext;
     [self presentModalViewController:taskCreator animated:YES];
@@ -240,14 +294,14 @@
 
 #pragma mark - AVAudioPlayerDelegate
 
--(void)audioPlayerDidFinishPlaying:
+- (void)audioPlayerDidFinishPlaying:
 (AVAudioPlayer *)player successfully:(BOOL)flag
 {
     TaskCell *cell = (TaskCell *)[self.tableView cellForRowAtIndexPath:_pathToPlayingCell];
-    [cell.playButton setTitle:@"Play" forState:UIControlStateNormal];
+    [cell.playButton setTitle:@"Play Audio" forState:UIControlStateNormal];
 }
 
--(void)audioPlayerDecodeErrorDidOccur:
+- (void)audioPlayerDecodeErrorDidOccur:
 (AVAudioPlayer *)player
                                 error:(NSError *)error
 {

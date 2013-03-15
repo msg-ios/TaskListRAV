@@ -13,5 +13,6 @@
 @property (strong, nonatomic) IBOutlet UILabel *taskNameLabel;
 @property (strong, nonatomic) IBOutlet UIImageView *taskPhoto;
 @property (strong, nonatomic) IBOutlet UIButton *playButton;
+@property (strong, nonatomic) IBOutlet UIButton *playVideoButton;
 
 @end
